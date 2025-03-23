@@ -1,0 +1,139 @@
+/* Smooth Transitions */
+* {
+    transition: all 0.4s ease-in-out;
+}
+
+/* Black & White Theme */
+body {
+    font-family: 'Arial', sans-serif;
+    background: url('https://source.unsplash.com/1600x900/?law,justice,gavel') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* Header */
+header {
+    background: black;
+    padding: 20px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* Chat Container */
+.chat-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: rgba(50, 50, 50, 0.9);
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+    animation: fadeInChat 1s ease-out;
+}
+
+/* Chatbox */
+.chat-box {
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+    background: black;
+    border-radius: 8px;
+    color: white;
+}
+
+/* Chat Message Effects */
+@keyframes fadeInMessage {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-message, .bot-message {
+    max-width: 80%;
+    padding: 10px 15px;
+    margin: 8px 0;
+    border-radius: 5px;
+    display: inline-block;
+    text-align: left;
+    animation: fadeInMessage 0.5s ease-in-out;
+}
+
+/* Input Field */
+.input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+input {
+    width: 75%;
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 5px;
+    outline: none;
+    margin-right: 10px;
+    transition: 0.3s;
+}
+
+input:focus {
+    border-color: #f39c12;
+    box-shadow: 0px 0px 8px rgba(243, 156, 18, 0.8);
+    transform: scale(1.05);
+}
+
+/* Enter Button */
+button {
+    padding: 10px 15px;
+    background: white;
+    border: none;
+    border-radius: 5px;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+button:hover {
+    background: grey;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* File Input Hidden */
+input[type="file"] {
+    position: absolute;
+    opacity: 0; /* Hide the file input */
+    cursor: pointer;
+}
+
+/* File Upload Button Inside Textbox */
+.file-label {
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Align the file input button to the right */
+.input-container {
+    position: relative;
+}
+
+/* Bot Message */
+.bot-message {
+    background: #2c3e50;
+    color: white;
+    float: left;
+    clear: both;
+}
+
+/* User Message */
+.user-message {
+    background: #008CBA;
+    color: white;
+    float: right;
+    clear: both;
+}

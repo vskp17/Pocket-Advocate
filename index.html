@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Advocate - Legal AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Pocket Advocate ⚖️</h1>
+        <p>Your AI-powered legal advisor</p>
+    </header>
+
+    <main>
+        <section class="chat-container">
+            <div class="chat-box" id="chatBox">
+                <p class="bot-message">👋 Hello! How can I assist you with your legal queries today?</p>
+            </div>
+
+            <div class="input-container">
+                <input type="text" id="questionInput" placeholder="Ask your legal question..." />
+                <button id="submitQuestionButton">➤</button>
+                <label for="fileInput" class="file-label">📎</label>
+                <input type="file" id="fileInput" accept="image/*, .pdf, .docx" />
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
