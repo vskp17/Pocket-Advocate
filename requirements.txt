@@ -6,3 +6,5 @@ pydantic
 pdfkit
 python-docx
 python-multipart
+flask == 3.0.3
+gunicorn
