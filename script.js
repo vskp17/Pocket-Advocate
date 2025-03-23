@@ -4,7 +4,6 @@ document.getElementById("submitQuestionButton").addEventListener("click", functi
 
     if (question === "") return;
 
-    // Add User Message
     let userMessage = document.createElement("p");
     userMessage.classList.add("user-message");
     userMessage.textContent = question;
@@ -13,7 +12,6 @@ document.getElementById("submitQuestionButton").addEventListener("click", functi
     document.getElementById("questionInput").value = "";
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Typing Animation
     let botTyping = document.createElement("p");
     botTyping.classList.add("bot-message", "typing");
     botTyping.textContent = "Typing";
@@ -30,7 +28,6 @@ document.getElementById("submitQuestionButton").addEventListener("click", functi
     }, 2000);
 });
 
-// Handle File Upload
 document.getElementById("fileInput").addEventListener("change", function() {
     let file = this.files[0];
     let chatBox = document.getElementById("chatBox");
@@ -40,7 +37,6 @@ document.getElementById("fileInput").addEventListener("change", function() {
         return;
     }
 
-    // Display file preview or name in chatbox
     let fileMessage = document.createElement("p");
     fileMessage.classList.add("bot-message");
 
@@ -58,7 +54,6 @@ document.getElementById("fileInput").addEventListener("change", function() {
     chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-// Function for Basic Legal Responses
 function getLegalResponse(question) {
     if (question.toLowerCase().includes("contract")) return "A contract must have an offer, acceptance, and consideration.";
     if (question.toLowerCase().includes("rights")) return "Your rights depend on jurisdiction. Consult a legal expert.";

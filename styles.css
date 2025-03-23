@@ -1,9 +1,7 @@
-/* Smooth Transitions */
 * {
     transition: all 0.4s ease-in-out;
 }
 
-/* Black & White Theme */
 body {
     font-family: 'Arial', sans-serif;
     background: url('https://source.unsplash.com/1600x900/?law,justice,gavel') no-repeat center center fixed;
@@ -14,7 +12,6 @@ body {
     text-align: center;
 }
 
-/* Header */
 header {
     background: black;
     padding: 20px;
@@ -23,7 +20,6 @@ header {
     font-weight: bold;
 }
 
-/* Chat Container */
 .chat-container {
     width: 80%;
     max-width: 600px;
@@ -35,7 +31,6 @@ header {
     animation: fadeInChat 1s ease-out;
 }
 
-/* Chatbox */
 .chat-box {
     max-height: 350px;
     overflow-y: auto;
@@ -45,7 +40,6 @@ header {
     color: white;
 }
 
-/* Chat Message Effects */
 @keyframes fadeInMessage {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -61,7 +55,6 @@ header {
     animation: fadeInMessage 0.5s ease-in-out;
 }
 
-/* Input Field */
 .input-container {
     display: flex;
     justify-content: center;
@@ -85,7 +78,6 @@ input:focus {
     transform: scale(1.05);
 }
 
-/* Enter Button */
 button {
     padding: 10px 15px;
     background: white;
@@ -103,26 +95,22 @@ button:hover {
     transform: scale(1.05);
 }
 
-/* File Input Hidden */
 input[type="file"] {
     position: absolute;
-    opacity: 0; /* Hide the file input */
+    opacity: 0; 
     cursor: pointer;
 }
 
-/* File Upload Button Inside Textbox */
 .file-label {
     font-size: 20px;
     cursor: pointer;
     margin-left: 10px;
 }
 
-/* Align the file input button to the right */
 .input-container {
     position: relative;
 }
 
-/* Bot Message */
 .bot-message {
     background: #2c3e50;
     color: white;
@@ -130,7 +118,6 @@ input[type="file"] {
     clear: both;
 }
 
-/* User Message */
 .user-message {
     background: #008CBA;
     color: white;
