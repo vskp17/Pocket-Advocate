@@ -21,24 +21,26 @@
     <main>
         <section class="chat-container">
             <div class="chat-box" id="chatBox">
-                <div class="summarize-container" id="summarizeContainer" style="display: none;">
+                <div class="summarize-container" id="summarizeContainer">
                     <button id="summarizeButton">🔄 Summarize</button>
-                </div>
+                    <button id="qualityCheck">🔄 Quality Check</button>
+
+                </div>  
                 <p class="bot-message">Hello! How can I assist you with your legal queries today?</p>
             </div>
 
             <div class="input-container">
-                <input type="text" id="questionInput" placeholder="Ask your legal question..." />
+                <input type="text" id="userMessage" placeholder="Ask your legal question..." />
                 <button id="submitQuestionButton">➤</button>
             </div>
 
             <!-- Updated Upload File Button -->
             <div class="file-upload-container">
-                <label for="fileInput" class="file-label">📤 Upload File</label>
-                <input type="file" id="fileInput" accept="image/*, .pdf, .docx" />
+                <label for="uploadFile" class="file-label">📤 Upload File</label>
+                <button id="downloadContractButton">📥 Download Contract</button>
+                <input type="file" id="uploadFile" accept="image/*, .pdf, .docx" />
             </div>
 
-            <button id="downloadButton" style="display: none;">📥 Download Chat</button>
         </section>
     </main>
 
