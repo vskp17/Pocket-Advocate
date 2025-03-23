@@ -8,22 +8,37 @@
 </head>
 <body>
     <header>
-        <h1>Pocket Advocate ⚖️</h1>
+        <h1>Pocket Advocate ⚖</h1>
         <p>Your AI-powered legal advisor</p>
+        <div class="header-buttons">
+            <div class="left-buttons">
+                <button id="viewHistoryButton">📜 History</button>
+                <button id="startNewChatButton">💬 New Chat</button>
+            </div>
+        </div>
     </header>
 
     <main>
         <section class="chat-container">
             <div class="chat-box" id="chatBox">
-                <p class="bot-message">👋 Hello! How can I assist you with your legal queries today?</p>
+                <div class="summarize-container" id="summarizeContainer" style="display: none;">
+                    <button id="summarizeButton">🔄 Summarize</button>
+                </div>
+                <p class="bot-message">Hello! How can I assist you with your legal queries today?</p>
             </div>
 
             <div class="input-container">
                 <input type="text" id="questionInput" placeholder="Ask your legal question..." />
                 <button id="submitQuestionButton">➤</button>
-                <label for="fileInput" class="file-label">📎</label>
+            </div>
+
+            <!-- Updated Upload File Button -->
+            <div class="file-upload-container">
+                <label for="fileInput" class="file-label">📤 Upload File</label>
                 <input type="file" id="fileInput" accept="image/*, .pdf, .docx" />
             </div>
+
+            <button id="downloadButton" style="display: none;">📥 Download Chat</button>
         </section>
     </main>
 

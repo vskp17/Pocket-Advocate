@@ -1,61 +1,110 @@
-document.getElementById("submitQuestionButton").addEventListener("click", function() {
-    let question = document.getElementById("questionInput").value.trim();
-    let chatBox = document.getElementById("chatBox");
+document.addEventListener("DOMContentLoaded", function () {
 
-    if (question === "") return;
-
-    let userMessage = document.createElement("p");
-    userMessage.classList.add("user-message");
-    userMessage.textContent = question;
-    chatBox.appendChild(userMessage);
-
-    document.getElementById("questionInput").value = "";
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    let botTyping = document.createElement("p");
-    botTyping.classList.add("bot-message", "typing");
-    botTyping.textContent = "Typing";
-    chatBox.appendChild(botTyping);
-
-    setTimeout(() => {
-        botTyping.remove();
-        let response = getLegalResponse(question);
-        let botMessage = document.createElement("p");
-        botMessage.classList.add("bot-message");
-        botMessage.textContent = response;
-        chatBox.appendChild(botMessage);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }, 2000);
+    document.getElementById("submitQuestionButton").addEventListener("click", sendMessage);
+    document.getElementById("uploadFile").addEventListener("change", uploadFile);
 });
 
-document.getElementById("fileInput").addEventListener("change", function() {
-    let file = this.files[0];
-    let chatBox = document.getElementById("chatBox");
+async function sendMessage() {
+    const userMessage = document.getElementById("userMessage").value;
+    if (userMessage.trim() === "") return; 
 
-    if (!file) {
-        alert("Please select a file to upload.");
-        return;
+    appendMessage(userMessage, "user"); 
+    document.getElementById("userMessage").value = "";
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/chat/chatWithBot", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user_message: userMessage }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Server Error: " + response.status);
+        }
+
+        const result = await response.json();
+        if (result.bot_response) {
+            appendMessage(result.bot_response, "bot"); 
+        }
+
+        if (result.downloadable) {
+            document.getElementById("downloadButton").style.display = "block";
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        appendMessage("❌ Error connecting to the server. Please try again.", "bot");
     }
+}
 
-    let fileMessage = document.createElement("p");
-    fileMessage.classList.add("bot-message");
+async function uploadFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    if (file.type.startsWith("image")) {
-        let img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.alt = file.name;
-        img.style.maxWidth = "100%";
-        fileMessage.appendChild(img);
-    } else {
-        fileMessage.textContent = `Uploaded file: ${file.name}`;
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/chat/uploadFile", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error("File upload failed");
+        }
+
+        const result = await response.json();
+        appendMessage("📂 File uploaded successfully!", "bot");
+
+    } catch (error) {
+        console.error("Upload Error:", error);
+        appendMessage("❌ File upload failed. Please try again.", "bot");
     }
+}
 
-    chatBox.appendChild(fileMessage);
+function convertMarkdownToHTML(markdownText) {
+    return markdownText
+        .replace(/\\(.?)\\*/g, "<strong>$1</strong>") 
+        .replace(/\(.?)\*/g, "<em>$1</em>") 
+        .replace(/(.*?)/g, "<u>$1</u>") 
+        .replace(/(.*?)/g, "<code>$1</code>") 
+        .replace(/\n/g, "<br>"); 
+}
+
+function appendMessage(message, sender) {
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("chat-message");
+    messageContainer.classList.add(sender === "user" ? "user-message" : "bot-response");
+
+    messageContainer.innerHTML = convertMarkdownToHTML(message);
+
+    document.getElementById("chatBox").appendChild(messageContainer);
+    scrollToBottom();
+}
+
+function scrollToBottom() {
+    const chatBox = document.getElementById("chatBox");
     chatBox.scrollTop = chatBox.scrollHeight;
-});
+}
 
-function getLegalResponse(question) {
-    if (question.toLowerCase().includes("contract")) return "A contract must have an offer, acceptance, and consideration.";
-    if (question.toLowerCase().includes("rights")) return "Your rights depend on jurisdiction. Consult a legal expert.";
-    return "I'm still learning! For legal matters, consult a lawyer.";
+function downloadContract() {
+    fetch("/chat/downloadContract", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_message: document.getElementById("userMessage").value }),
+    })
+        .then((response) => response.blob())
+        .then((blob) => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "contract.docx";
+            link.click();
+        })
+        .catch((error) => {
+            console.error("Error downloading contract:", error);
+        });
 }
