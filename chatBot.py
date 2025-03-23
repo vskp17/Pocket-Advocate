@@ -5,11 +5,23 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from docx import Document
-import io 
+import io
 from fastapi.responses import StreamingResponse
 
+# Load environment variables
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+if not GEMINI_API_KEY:
+    raise RuntimeError("❌ Google API key is missing. Set 'GEMINI_API_KEY' in .env file.")
+
+# Configure Google Generative AI
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Initialize FastAPI App
 app = FastAPI()
+
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,29 +30,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-dotenv_path = os.path.join(os.path.dirname(__file__), ".env") 
-load_dotenv(dotenv_path)
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-if not GEMINI_API_KEY:
-    raise RuntimeError("X Google API key is missing. Set 'GEMINI_API_KEY' in .env file or environment variables.")
-
-genai.configure(api_key=GEMINI_API_KEY)
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+# Define Pydantic Model
 class ChatRequest(BaseModel):
     user_message: str
 
+# AI Model Configuration
 safety_settings = [
     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
@@ -60,54 +54,45 @@ model = genai.GenerativeModel(
     generation_config=generation_config,
 )
 
-DISCLAIMER = "\n\n *Disclaimer: The AI-generated response is for informational purposes only and should not be considered legal advice. Please consult a qualified lawyer for any legal matters.*"
+DISCLAIMER = "\n\n*Disclaimer: This AI-generated response is for informational purposes only and should not be considered legal advice.*"
 
 LEGAL_PRE_PROMPT = """
 You are an AI legal assistant with expertise in contract drafting and legal advisory. 
 Your response must be clear, legally precise, and formatted professionally.
 
 Task:
-1️ Generate a well-structured **legal contract** based on the provided clauses.
-2️ Provide **legal advice** related to the clauses, including risks, improvements, and missing terms.
+1. Generate a well-structured **legal contract** based on the provided clauses.
+2. Provide **legal advice** related to the clauses, including risks, improvements, and missing terms.
 
 Make sure to use formal legal language and be concise.
 """
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to Pocket Advocate API!"}
+
 @app.post("/chat/uploadImage")
 async def upload_image(user_message: str = Form(""), image: UploadFile = File(None)):
     try:
-        image_data = None
-        
-        if image:
-            image_data = await image.read() 
-
+        image_data = await image.read() if image else None
         full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {user_message}\n" + ("Image attached." if image_data else "")
-
+        
         response = model.generate_content(full_prompt)
-
         bot_response = response.text if hasattr(response, "text") else "No response generated."
 
-        return {
-            "user_message": user_message,
-            "bot_response": bot_response + DISCLAIMER,
-            "image_uploaded": bool(image_data),
-        }
-    
+        return {"user_message": user_message, "bot_response": bot_response + DISCLAIMER, "image_uploaded": bool(image_data)}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image upload error: {str(e)}")
 
 @app.post("/chat/chatWithBot")
 def chat_with_bot(chat_request: ChatRequest):
     try:
-        user_message = chat_request.user_message
-
-        full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {user_message}"
-
+        full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {chat_request.user_message}"
         response = model.generate_content(full_prompt)
-
         bot_response = response.text if hasattr(response, "text") else "Sorry, I couldn't generate a response."
 
-        return {"user_message": user_message, "bot_response": bot_response + DISCLAIMER}
+        return {"user_message": chat_request.user_message, "bot_response": bot_response + DISCLAIMER}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chatbot error: {str(e)}")
@@ -115,13 +100,10 @@ def chat_with_bot(chat_request: ChatRequest):
 @app.post("/chat/summarizeDocument")
 async def summarize_document(file: UploadFile = File(...)):
     try:
-        file_content = await file.read()
-        text = file_content.decode("utf-8")  
-
+        text = (await file.read()).decode("utf-8")
         summary_prompt = f"Summarize this legal document concisely:\n{text}"
 
         response = model.generate_content(summary_prompt)
-
         bot_response = response.text if hasattr(response, "text") else "Sorry, could not generate a summary."
 
         return {"summary": bot_response}
@@ -132,13 +114,10 @@ async def summarize_document(file: UploadFile = File(...)):
 @app.post("/chat/contractQualityCheck")
 async def contract_quality_check(file: UploadFile = File(...)):
     try:
-        file_content = await file.read()
-        text = file_content.decode("utf-8")
-
+        text = (await file.read()).decode("utf-8")
         analysis_prompt = f"Analyze this contract for missing clauses, legal risks, and areas of improvement:\n{text}"
 
         response = model.generate_content(analysis_prompt)
-
         bot_response = response.text if hasattr(response, "text") else "Sorry, could not analyze the contract."
 
         return {"contract_analysis": bot_response}
@@ -146,19 +125,14 @@ async def contract_quality_check(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Contract analysis error: {str(e)}")
 
-
-
 @app.post("/chat/downloadContract")
 async def download_contract(chat_request: ChatRequest):
     try:
-        user_message = chat_request.user_message
-
-        full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {user_message}"
-
+        full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {chat_request.user_message}"
         response = model.generate_content(full_prompt)
-
         bot_response = response.text if hasattr(response, "text") else "Sorry, could not generate the contract."
 
+        # Create DOCX file
         doc = Document()
         doc.add_heading("AI-Generated Legal Contract", level=1)
         doc.add_paragraph(bot_response + DISCLAIMER)
