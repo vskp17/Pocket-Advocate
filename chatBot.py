@@ -4,6 +4,19 @@ from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from docx import Document
+import io 
+from fastapi.responses import StreamingResponse
+
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env") 
 load_dotenv(dotenv_path)
@@ -38,7 +51,7 @@ safety_settings = [
 generation_config = {
     "temperature": 0.7,
     "top_p": 0.9,
-    "max_output_tokens": 500,
+    "max_output_tokens": 1000,
 }
 
 model = genai.GenerativeModel(
@@ -47,15 +60,15 @@ model = genai.GenerativeModel(
     generation_config=generation_config,
 )
 
-DISCLAIMER = "\n\n Disclaimer: The AI-generated response is for informational purposes only and should not be considered legal advice. Please consult a qualified lawyer for any legal matters.*"
+DISCLAIMER = "\n\n *Disclaimer: The AI-generated response is for informational purposes only and should not be considered legal advice. Please consult a qualified lawyer for any legal matters.*"
 
 LEGAL_PRE_PROMPT = """
 You are an AI legal assistant with expertise in contract drafting and legal advisory. 
 Your response must be clear, legally precise, and formatted professionally.
 
 Task:
-1️. Generate a well-structured **legal contract** based on the provided clauses.
-2️. Provide **legal advice** related to the clauses, including risks, improvements, and missing terms.
+1️ Generate a well-structured **legal contract** based on the provided clauses.
+2️ Provide **legal advice** related to the clauses, including risks, improvements, and missing terms.
 
 Make sure to use formal legal language and be concise.
 """
@@ -98,3 +111,67 @@ def chat_with_bot(chat_request: ChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chatbot error: {str(e)}")
+
+@app.post("/chat/summarizeDocument")
+async def summarize_document(file: UploadFile = File(...)):
+    try:
+        file_content = await file.read()
+        text = file_content.decode("utf-8")  
+
+        summary_prompt = f"Summarize this legal document concisely:\n{text}"
+
+        response = model.generate_content(summary_prompt)
+
+        bot_response = response.text if hasattr(response, "text") else "Sorry, could not generate a summary."
+
+        return {"summary": bot_response}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Document summarization error: {str(e)}")
+
+@app.post("/chat/contractQualityCheck")
+async def contract_quality_check(file: UploadFile = File(...)):
+    try:
+        file_content = await file.read()
+        text = file_content.decode("utf-8")
+
+        analysis_prompt = f"Analyze this contract for missing clauses, legal risks, and areas of improvement:\n{text}"
+
+        response = model.generate_content(analysis_prompt)
+
+        bot_response = response.text if hasattr(response, "text") else "Sorry, could not analyze the contract."
+
+        return {"contract_analysis": bot_response}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Contract analysis error: {str(e)}")
+
+
+
+@app.post("/chat/downloadContract")
+async def download_contract(chat_request: ChatRequest):
+    try:
+        user_message = chat_request.user_message
+
+        full_prompt = f"{LEGAL_PRE_PROMPT}\nUser: {user_message}"
+
+        response = model.generate_content(full_prompt)
+
+        bot_response = response.text if hasattr(response, "text") else "Sorry, could not generate the contract."
+
+        doc = Document()
+        doc.add_heading("AI-Generated Legal Contract", level=1)
+        doc.add_paragraph(bot_response + DISCLAIMER)
+
+        file_stream = io.BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+
+        return StreamingResponse(
+            file_stream,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": "attachment; filename=contract.docx"}
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Contract generation error: {str(e)}")
