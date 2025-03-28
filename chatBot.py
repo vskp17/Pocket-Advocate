@@ -8,20 +8,16 @@ from docx import Document
 import io
 from fastapi.responses import StreamingResponse
 
-# Load environment variables
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not GEMINI_API_KEY:
-    raise RuntimeError("❌ Google API key is missing. Set 'GEMINI_API_KEY' in .env file.")
+    raise RuntimeError("X Google API key is missing. Set 'GEMINI_API_KEY' in .env file.")
 
-# Configure Google Generative AI
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Initialize FastAPI App
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,11 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define Pydantic Model
 class ChatRequest(BaseModel):
     user_message: str
 
-# AI Model Configuration
 safety_settings = [
     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
@@ -132,7 +126,6 @@ async def download_contract(chat_request: ChatRequest):
         response = model.generate_content(full_prompt)
         bot_response = response.text if hasattr(response, "text") else "Sorry, could not generate the contract."
 
-        # Create DOCX file
         doc = Document()
         doc.add_heading("AI-Generated Legal Contract", level=1)
         doc.add_paragraph(bot_response + DISCLAIMER)
